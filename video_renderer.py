@@ -472,11 +472,30 @@ def render_lap(
 
     # ── Frame range ────────────────────────────────────────────────────────────
     sync_offset = sync_offset or 0.0
+    
+    # =======================================================================
+    # RENDERING FIX: Virtual Canvas for Overlay Only Mode (No Video)
+    # If 'overlay_only' is True AND video base metadata falilled (-1 or 0),
+    # we force Full HD estable dimensions and calculate total number of correct frames
+    # =======================================================================
+    if overlay_only and (fps <= 0 or vw <= 0 or vh <= 0):
+        vw = 1920        # Standard Resolution Full HD (Width)
+        vh = 1080        # Standard Resolution Full HD (Height)
+        fps = 30.0       # Standard video framerate 
+        
+        # Calculate total lenght based on GPS/Lap data
+        lap_dur = job.duration if job.duration is not None else 65.0
+        gpx_end = job.gpx_end if job.gpx_end is not None else lap_dur
+        
+        # Virtua video created long enough for complete route
+        virtual_duration = max(3600.0, gpx_end + sync_offset + padding + 10.0)
+        total = int(virtual_duration * fps) # Total simulated frames are injected
 
     if job.gpx_start is not None:
         vid_lap_start = sync_offset + job.gpx_start
         vid_lap_end   = sync_offset + job.gpx_end
         vid_start     = max(0.0, vid_lap_start - padding)
+        # IMPORTANT: Assures that vid_end use correct 'total' simulated
         vid_end       = min(total / fps, vid_lap_end + padding)
         f_start       = max(0, int(vid_start * fps))
         f_end         = min(total, int(math.ceil(vid_end * fps)))
