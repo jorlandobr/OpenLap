@@ -111,6 +111,13 @@ def run_export(
         item_scope        = item.get('scope') or scope
         item_padding       = item.get('padding') if item.get('padding') is not None else padding
         item_overlay_only  = item.get('overlay_only') if item.get('overlay_only') is not None else overlay_only
+        
+        # =======================================================================
+        # UNIFICAÇÃO DE SEGURANÇA: Se o escopo global pediu overlay_only,
+        # força a variável do item ativo a virar True. Elimina o ponto cego da UI!
+        # =======================================================================
+        if overlay_only or item_overlay_only:
+            item_overlay_only = True
 
         if not csv_path or not os.path.exists(csv_path):
             log(f"Skipping: CSV not found: {csv_path}")
@@ -142,11 +149,18 @@ def run_export(
                     pt.lean_angle = compute_lean_angle(
                         pt.speed, pt.gyro_z, pt.gforce_y)
 
-        if not videos and (item_scope != 'full' or item_overlay_only):
+        #if not videos and (item_scope != 'full' or item_overlay_only):
+        #    log("  ✗ No video file — skipping")
+        #    done_jobs += 1
+        #    continue
+         
+        # CRITICAL FIX: If 'overlay_only', DOES NOT require background video!
+        # File ignoed only if there is no video AND not overly only mode.
+        if not videos and not item_overlay_only:
             log("  ✗ No video file — skipping")
             done_jobs += 1
-            continue
-
+            continue 
+         
         _ext = '.mov' if item_overlay_only else '.mp4'
 
         # ── Join phase ────────────────────────────────────────────────────────
