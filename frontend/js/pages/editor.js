@@ -47,6 +47,8 @@
     lap_info:    ['Scoreboard'],
     multi:       ['Multi-Line'],
     image:       ['Image'],
+	//extra gauge added - gear
+    gear:        ['Numeric', 'Bar', 'Dial'],
   };
 
   const ALL_CHANNELS = [
@@ -65,6 +67,8 @@
     { value: 'lap_info',    label: 'Lap Info' },
     { value: 'multi',       label: 'Multi-Line' },
     { value: 'image',       label: 'Image / Logo' },
+	//extra gauge added - gear
+    { value: 'gear',        label: 'Gear' },
   ];
 
   // Channels that can appear inside a Multi-Line gauge
@@ -202,7 +206,9 @@
           altitude:    {label:'Altitude',  unit:'m',    min:0,   max:500, sym:false, val:220},
           lap_time:    {label:'Lap Time',  unit:'',     min:0,   max:120, sym:false, val:84.5},
           delta_time:  {label:'Delta',     unit:'s',    min:-30, max:30,  sym:true,  val:-0.234},
-        }[channel] || {label:'Value', unit:'', min:0, max:100, sym:false, val:42};
+		  //extra gauge added - gear
+          gear:        {label:'Gear',      unit:'',     min:0,   max:6,   sym:false, val:0},
+        } [channel] || {label:'Value', unit:'', min:0, max:100, sym:false, val:42};
 
         const hist = Array.from({length:40}, (_,i) => {
           const t = i * 0.1;
@@ -241,6 +247,8 @@
       altitude:    { key:'alt',         label:'Altitude', unit:'m',    min:0,   max:500,   sym:false },
       lean:        { key:'lean',        label:'Lean',     unit:'°',    min:-60, max:60,    sym:true  },
       lap_time:    { key:'t',           label:'Lap Time', unit:'',     min:0,   max:300,   sym:false },
+      // CRITICAL FIX: Registers the 'gear' extra channel added parameters into the editor selection framework
+      gear:        { key:'gear',        label:'Gear',     unit:'',     min:0,   max:6,     sym:false },
     };
   }
 
