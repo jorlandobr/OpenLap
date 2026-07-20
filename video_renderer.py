@@ -300,6 +300,8 @@ def _setup_delta_time(reference_lap, job, session):
         'rpm':          _ref_arr('rpm'),
         'exhaust_temp': _ref_arr('exhaust_temp'),
         'alt':          _ref_arr('alt'),
+        # extra gauge added - gear
+        'gear':         _ref_arr('gear'),        
     }
 
     # Sector splits
@@ -670,6 +672,8 @@ def render_lap(
                                 't':            0.0,
                                 'delta_time':   0.0,
                                 'alt':          float(np.interp(d_ref, _ref_dist_u, _ref_channels.get('alt', [0.0]*len(_ref_dist_u)))),
+                                # CRITICAL PRODUCTION FIX: Direct the 'gear' channel string to read the custom dataclass property
+                                'gear':         float(np.interp(d_ref, _ref_dist_u, _ref_channels['gear'])),                                
                             })
                         except Exception:
                             pass
@@ -684,6 +688,8 @@ def render_lap(
                         'exhaust_temp':   pt.exhaust_temp,
                         'delta_time':     delta_val,
                         'alt':            pt.alt,
+                        # extra gauge added - gear
+                        'gear':           pt.gear,                        
                         # Lap-scoreboard fields
                         'li_lap_num':     pt.lap,
                         'li_total_laps':  _total_timed,
