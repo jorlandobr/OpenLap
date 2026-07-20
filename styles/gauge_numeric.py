@@ -58,6 +58,13 @@ def render(data: dict, w: int, h: int):
         fs_value = max(8, min(int(20 * sc), int(w * 0.22)))
     elif channel == 'lean':
         txt = f"{value:.1f}"
+    # Formats "gear" offline on Matplotlib
+    elif channel == 'gear' or channel == 'Gear':
+        if value is None:
+            txt = "—"
+        else:
+            gear_int = int(round(value))
+            txt = "N" if gear_int == 0 else str(gear_int)
     elif abs(value) >= 10000:
         txt = f"{value:,.0f}"
     elif abs(value) >= 100:
