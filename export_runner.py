@@ -113,8 +113,8 @@ def run_export(
         item_overlay_only  = item.get('overlay_only') if item.get('overlay_only') is not None else overlay_only
         
         # =======================================================================
-        # UNIFICAÇÃO DE SEGURANÇA: Se o escopo global pediu overlay_only,
-        # força a variável do item ativo a virar True. Elimina o ponto cego da UI!
+        # SAFETY: If global scope required overlay_only, 
+        # forces active item variable to turn True. 
         # =======================================================================
         if overlay_only or item_overlay_only:
             item_overlay_only = True
