@@ -228,6 +228,14 @@ function fmtValue(value, channel) {
     if (value == null) return '—';
     return (value >= 0 ? '+' : '') + value.toFixed(3);
   }
+  
+  // added extra channel "gear"
+  if (channel === 'gear' || channel === 'Gear') {
+    if (value == null) return '—';
+    const gearInt = Math.round(value);
+    return gearInt === 0 ? 'N' : String(gearInt);
+  }
+  
   const abs = Math.abs(value);
   if (abs >= 10000) return value.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
   if (abs >= 100)   return value.toFixed(0);
