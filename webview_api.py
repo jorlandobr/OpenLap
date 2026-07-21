@@ -595,7 +595,7 @@ class WebviewAPI:
                     'lon':          p.lon,
                     'lean':         p.lean_angle,
                     # extra gauge added - gear
-                    'gear': p.gear,                    
+                    'gear':         p.gear,                    
                 }
                 points.append(d)
             return points
