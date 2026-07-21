@@ -138,7 +138,7 @@ const API = (() => {
     startAutoSync:              (sessions)           => call('start_auto_sync', sessions),
     cancelAutoSync:             ()                   => call('cancel_auto_sync'),
 	
-    // Add this line inside the public return { ... } block of your api.js file:
+    // Clear queue button confirmation
     confirmClearQueue: () => call('confirm_clear_queue'),
 
   };
