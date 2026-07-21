@@ -70,7 +70,6 @@
 
     _bindEvents();
     _refreshItemList(items);
-
     // Restore persistent state accumulated while the tab was not visible
     const logEl = container.querySelector('#exp-log');
     if (logEl && _logLines.length) {
@@ -108,8 +107,18 @@
     <div class="toolbar-left">
       <span class="page-title">Export</span>
     </div>
-    <div class="toolbar-right">
-      <button class="btn btn-secondary hidden" id="exp-cancel-btn">Cancel</button>
+    <div class="toolbar-right" style="display: flex !important; gap: 10px; align-items: center;">
+      <!-- LOCAL START BUTTON -->
+      <button class="btn" id="exp-start-btn" style="background-color: #00cc66 !important; color: white !important; font-weight: bold; border: none; border-radius: 4px; padding: 6px 14px; cursor: pointer; display: inline-block !important;">
+        🎬 Start Export
+      </button>
+      
+      <!-- CLEAR QUEUE BUTTON -->
+      <button class="btn" id="exp-clear-btn" style="background-color: #ef233c !important; color: white !important; border: none; border-radius: 4px; padding: 6px 14px; cursor: pointer; display: inline-block !important;">
+        🗑️ Clear Queue
+      </button>
+      <!-- ... (Hidden cancel button) -->
+	       <button class="btn btn-secondary hidden" id="exp-cancel-btn">Cancel</button>
     </div>
   </div>
   <div class="page-divider"></div>
@@ -156,10 +165,47 @@
   // ── Event wiring ──────────────────────────────────────────────────────────────
 
   function _bindEvents() {
-    const $ = id => _container.querySelector('#' + id);
-    $('exp-cancel-btn').addEventListener('click', async () => {
+    const $ = id => _container.querySelector('#' + id);    $('exp-cancel-btn').addEventListener('click', async () => {
       await API.cancelExport();
       _setExporting(false);
+    });    
+	
+    // Custom Clear Queue (FIXED NATIVE BRIDGE LINK)
+    $('exp-clear-btn').addEventListener('click', async () => {
+      try {
+        // Calls the public exposed macro mapping route securely [INDEX]
+        const confirmado = await API.confirmClearQueue();
+        
+        if (confirmado) {
+          State.set('selectedItems', []); // Flushes telemetry array
+          Router.refresh();               // Repaints interface layout instantly
+        }
+      } catch (err) {
+        console.error("Native bridge dialogue failed, engaging fallback clear:", err);
+        // Fallback layout protection: flushes state anyway if thread hangs
+        State.set('selectedItems', []);
+        Router.refresh();
+      }
+    });
+
+    // Custom Start Export
+    $('exp-start-btn').addEventListener('click', async () => {
+      const items = State.get('selectedItems') || [];
+      if (items.length === 0) {
+        alert("Empty queue! Add sessions on Data or Overlay tabs first.");
+        return;
+      }
+      const params = (typeof ExportParams !== 'undefined' && ExportParams.get) ? ExportParams.get() : {};
+      params.items = items;
+      try {
+        $('exp-start-btn').disabled = true;
+        $('exp-start-btn').textContent = "⏳ Processing...";
+        await API.startExport(params); 
+      } catch (err) {
+        alert(`Error on export start: ${err}`);
+        $('exp-start-btn').disabled = false;
+        $('exp-start-btn').textContent = "🎬 Start Export";
+      }
     });
   }
 
@@ -276,9 +322,19 @@
     _setProgress(ok ? 100 : 0, msg);
     _setExporting(false);
     _setBadge(ok ? 'Done' : 'Error', ok ? 'badge-ok' : 'badge-err');
-    // Export finished — offer auto-sync the chance to run now.
+	    // Export finished — offer auto-sync the chance to run now.
     // Python's start_auto_sync skips sessions already synced or failed, so
     // it is safe to call with all matched sessions (it filters internally).
+
+    // AUTOMATIC QUEUE TRUNCATION SYSTEM [INDEX]
+    if (ok) {
+      console.log(">>> Export execution succeeded. Engaging Auto-Clear trigger.");
+      State.set('selectedItems', []); // Flushes dynamic array [INDEX]
+      if (_container) {
+        _refreshItemList([]); // Redraws layout panel view instantly with zero flicker [INDEX]
+      }
+    }
+
     const sessions = (State.get('sessions') || []).filter(s => s.matched && s.video_paths?.length);
     if (sessions.length) API.startAutoSync(sessions).catch(() => {});
   }
