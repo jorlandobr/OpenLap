@@ -1390,3 +1390,18 @@ class WebviewAPI:
         if aim_data.is_aim_csv(csv_path):
             return aim_data.load_csv(csv_path)
         return racebox_data.load_csv(csv_path)
+
+    def confirm_clear_queue(self) -> bool:
+        """
+        Exhibits an immutable native OS modal block window sheet.
+        """
+        import webview
+        
+        # FIX: Try to grab the current active window or fall back safely to the master windows list
+        active_win = webview.active_window() or webview.windows[0]
+        
+        # Executes the desktop-level confirmation modal sheet
+        return active_win.create_confirmation_dialog(
+            "Confirmation", 
+            "Do you really want to clear all item at export queue?"
+        )
